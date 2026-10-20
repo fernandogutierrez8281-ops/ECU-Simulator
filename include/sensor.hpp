@@ -16,18 +16,27 @@ class Sensor{
         double min = 0.0f;
         double max = 100.0f;
 
+        double noiseMin = -1;
+        double noiseMax = 1;
+
         // Random number generator for simulating readings
         std::mt19937 generator;
         std::uniform_real_distribution<double> distribution;
 
+        // Noise genetator
+        std::mt19937 noiseGenerator;
+        std::uniform_real_distribution<double> noiseDistribution;
+
+
         double currentReading = 0;
+        double noise = 0;
 
     public:
         Sensor(std::string name, std::string unit);
 
         virtual ~Sensor();
 
-        void setRange(float minimum, float maximum);
+        void setSensorRange(float minimum, float maximum);
 
         std::string getName();
         
@@ -35,13 +44,23 @@ class Sensor{
 
         float getMax();
 
+        float setCurrentReading(float reading);
+
         float getCurrentReading();
 
         bool isValidReading(float reading);
         
-        void initializeRandomGenerator(std::optional<unsigned int> seed = std::nullopt);
+        void initializeRandomReadings(std::optional<unsigned int> seed = std::nullopt);
+
+        void setNoiseRange(float minimum, float maximum);
+
+        void initializeNoise(std::optional<unsigned int> seed = std::nullopt);
+
+        void updateSelfNoise();
 
         void showReading();
+        
+        
 };
 
 /////////////////////////////////////////////////////////
@@ -52,7 +71,7 @@ class SimpleSensor : public Sensor {
 
         ~SimpleSensor() override;
 
-        void simReading(float noise = 0.0);
+        void simReading(bool hasNoise = true);
 };
 
 //////////////////////////////////////////////////////////
@@ -73,9 +92,11 @@ class OpenLoopSensor : public Sensor {
 
         void setSetpoint(float newSetpoint);
         
-        void simReading(float simpleSensorReading, float kp, float noise = 0.0);
+        void simReading(float simpleSensorReading, float kp, bool hasNoise = true);
 
         void showReading();
+
+        void setLastReading(float reading);
 
 };
 

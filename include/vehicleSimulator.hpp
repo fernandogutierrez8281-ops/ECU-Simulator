@@ -8,24 +8,31 @@
 
 #include "sensor.hpp"
 
-class PIDcontroller {
+class VehicleSimulator {
     private:
-        double kp;
-        double ki;
-        double kd;
+        int seed;
 
-        double error = 0.0;
-        double previousError = 0.0;
-
-        double output = 0.0;
+        SimpleSensor accelerationChange{"AccelerationInput", "%"};
+        OpenLoopSensor acceleration{"Acceleration", "m/s^2"};
+        OpenLoopSensor velocity{"Velocity", "km/h"};
+        OpenLoopSensor temperature{"Temperature", "°C"};
+        OpenLoopSensor rpm{"RPM", "rpm"};
+        OpenLoopSensor battery{"Battery", "V"};
+        OpenLoopSensor oilPressure{"Oil Pressure", "psi"};
         
-
     public:
-        PIDcontroller(double kp, double ki, double kd);
+        VehicleSimulator(int seed);
 
-        void compute(double setpoint, double measuredValue, double dt);
+        ~VehicleSimulator();
 
-        void showOutput();
+        void initializeSensors();
+
+        void updateReadings();
+
+        void showReadings();
+
+
+
 };
 
         
