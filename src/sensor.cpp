@@ -86,7 +86,22 @@ void Sensor::updateSelfNoise() {
 }
 
 void Sensor::showReading() {
-    std::cout << getName() << " Reading: " << getCurrentReading() << " " << unit << std::endl;
+
+    float normalizeReading = (this->getCurrentReading() - this->getMin())/(this->getMax() - this->getMin());
+    int barrResolution = 10;
+
+    std::cout << getName() << " " << getCurrentReading() << " " << unit << ": ";
+    std::cout << "[";
+    for(int i = 0; i<= barrResolution; i++){
+        if(i <= normalizeReading*barrResolution){
+            std::cout << "#";
+        } else {
+            std::cout << "-";
+        }
+    }
+
+     std::cout << "]" << std::endl;
+
 }
 
 
@@ -141,10 +156,6 @@ void OpenLoopSensor::simReading(float simpleSensorReading, float kp, bool hasNoi
 
     lastReading = currentReading; // Update last reading for the next iteration
 
-}
-
-void OpenLoopSensor::showReading() {
-    std::cout << getName() << ": " << getCurrentReading() << " " << unit << std::endl;
 }
 
 void OpenLoopSensor::setLastReading(float reading) {

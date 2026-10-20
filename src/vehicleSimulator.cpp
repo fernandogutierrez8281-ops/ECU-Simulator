@@ -13,7 +13,7 @@ VehicleSimulator::~VehicleSimulator() = default;
 void VehicleSimulator::initializeSensors() {
 
     // Initialize the random number generator for the acceleration input
-    accelerationChange.setSensorRange(-15.0, 100.0);
+    accelerationChange.setSensorRange(-5.0, 5.0);
     accelerationChange.initializeRandomReadings(seed);
 
     // based on the input change the acceleration

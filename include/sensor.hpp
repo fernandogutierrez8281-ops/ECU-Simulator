@@ -94,8 +94,6 @@ class OpenLoopSensor : public Sensor {
         
         void simReading(float simpleSensorReading, float kp, bool hasNoise = true);
 
-        void showReading();
-
         void setLastReading(float reading);
 
 };
