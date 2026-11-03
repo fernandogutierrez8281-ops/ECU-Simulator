@@ -1,4 +1,6 @@
-#include<iostream>
+#include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "sensor.hpp"
 #include "vehicleSimulator.hpp"
@@ -17,6 +19,8 @@ int main(){
         simulator.updateReadings();
         simulator.showReadings();
         std::cout << " " << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(dt * 1000)));
 
     }
 

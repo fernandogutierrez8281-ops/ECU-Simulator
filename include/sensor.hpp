@@ -5,11 +5,14 @@
 #include<string>
 #include <optional>
 #include <iostream>
+#include <iomanip>
 
 class Sensor{
     private:
-        std::string simulationName;
-        std::string simulationType;
+        std::string sensorName;
+        std::string sensorState;
+
+        std::vector<float> readingsBuffer;
 
     protected:
         std::string unit;
@@ -57,6 +60,8 @@ class Sensor{
         void initializeNoise(std::optional<unsigned int> seed = std::nullopt);
 
         void updateSelfNoise();
+
+        void buildSensorAsBarr();
 
         void showReading();
         

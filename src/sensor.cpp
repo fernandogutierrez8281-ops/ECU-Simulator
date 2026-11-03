@@ -10,7 +10,7 @@
 // Sensor class implementation
 
 Sensor::Sensor(std::string name, std::string unit = "")
-    : simulationName(name),
+    : sensorName(name),
       unit(unit),
       min(0.0f),
       max(100.0f) {
@@ -24,7 +24,7 @@ void Sensor::setSensorRange(float minimum, float maximum) {
     max = maximum;
 }
 
-std::string Sensor::getName()  { return simulationName; }
+std::string Sensor::getName()  { return sensorName; }
 
 float Sensor::getMin() {
     return min;
@@ -85,12 +85,10 @@ void Sensor::updateSelfNoise() {
     noise = noiseDistribution(noiseGenerator); 
 }
 
-void Sensor::showReading() {
-
+void Sensor::buildSensorAsBarr() {
     float normalizeReading = (this->getCurrentReading() - this->getMin())/(this->getMax() - this->getMin());
     int barrResolution = 10;
 
-    std::cout << getName() << " " << getCurrentReading() << " " << unit << ": ";
     std::cout << "[";
     for(int i = 0; i<= barrResolution; i++){
         if(i <= normalizeReading*barrResolution){
@@ -100,7 +98,25 @@ void Sensor::showReading() {
         }
     }
 
-     std::cout << "]" << std::endl;
+     std::cout << "] ";
+
+}
+
+void Sensor::showReading() {
+
+    std::cout << std::fixed << std::setprecision(2);
+
+    std::cout << std::left << std::setw(20) << getName();
+    std::cout << std::right << std::setw(10) << getCurrentReading();
+    std::cout << " " << std::left << std::setw(10) << unit;
+    this->buildSensorAsBarr();
+
+    if(!isValidReading(getCurrentReading())){
+        std::cout << "[FAIL]";
+    }
+
+    std::cout << "\n";
+    
 
 }
 

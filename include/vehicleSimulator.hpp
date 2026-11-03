@@ -15,7 +15,7 @@ class VehicleSimulator {
         SimpleSensor accelerationChange{"AccelerationInput", "%"};
         OpenLoopSensor acceleration{"Acceleration", "m/s^2"};
         OpenLoopSensor velocity{"Velocity", "km/h"};
-        OpenLoopSensor temperature{"Temperature", "°C"};
+        OpenLoopSensor temperature{"Temperature", "C"};
         OpenLoopSensor rpm{"RPM", "rpm"};
         OpenLoopSensor battery{"Battery", "V"};
         OpenLoopSensor oilPressure{"Oil Pressure", "psi"};
