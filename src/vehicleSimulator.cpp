@@ -6,74 +6,95 @@
 VehicleSimulator::VehicleSimulator(int seed)
     : seed(seed) {
 
+        sensors.reserve(7); // Reserve space for 7 sensors
+
+        sensors.emplace_back(new SimpleSensor("AccelerationInput", "%"));
+        sensors.emplace_back(new OpenLoopSensor("Acceleration", "m/s^2"));
+        sensors.emplace_back(new OpenLoopSensor("Velocity", "km/h"));   
+        sensors.emplace_back(new OpenLoopSensor("Temperature", "C"));
+        sensors.emplace_back(new OpenLoopSensor("RPM", "rpm"));
+        sensors.emplace_back(new OpenLoopSensor("Battery", "V"));
+        sensors.emplace_back(new OpenLoopSensor("Oil Pressure", "psi"));
+
+        for (std::size_t i = 0; i < sensors.size(); ++i) {
+            sensorMap.emplace(sensors[i]->getName(), i);
+        }
 };
 
 VehicleSimulator::~VehicleSimulator() = default;
 
+Sensor* VehicleSimulator::getSensor(const std::string& name) {
+    auto it = sensorMap.find(name);
+    if (it != sensorMap.end()) {
+        return sensors[it->second];
+    }
+    return nullptr;
+}
+
 void VehicleSimulator::initializeSensors() {
 
     // Initialize the random number generator for the acceleration input
-    accelerationChange.setSensorRange(-5.0, 5.0);
-    accelerationChange.initializeRandomReadings(seed);
+    this->getSensor("AccelerationInput")->setSensorRange(-5.0, 15.0); // Set initial reading for acceleration input
+    this->getSensor("AccelerationInput")->initializeRandomReadings(seed);
 
     // based on the input change the acceleration
-    acceleration.setSensorRange(-20.0, 120.0);
-    acceleration.initializeRandomReadings(seed);
+    this->getSensor("Acceleration")->setSensorRange(-20.0, 120.0);
+    this->getSensor("Acceleration")->initializeRandomReadings(seed);
 
     // Set the range for the other sensors
-    velocity.setSensorRange(-10.0, 85.0);
-    velocity.setNoiseRange(-5.0,5.0);
-    velocity.initializeNoise(seed);
+    this->getSensor("Velocity")->setSensorRange(-10.0, 85.0);
+    this->getSensor("Velocity")->setNoiseRange(-5.0,5.0);
+    this->getSensor("Velocity")->initializeNoise(seed);
 
-    temperature.setSensorRange(-20.0, 110.0);
-    temperature.setNoiseRange(-5.0,5.0);
-    temperature.initializeNoise(seed);
+    this->getSensor("Temperature")->setSensorRange(-20.0, 110.0);
+    this->getSensor("Temperature")->setNoiseRange(-5.0,5.0);
+    this->getSensor("Temperature")->initializeNoise(seed);
 
-    rpm.setSensorRange(700.0, 7000.0);
-    rpm.setNoiseRange(-5.0,5.0);
-    rpm.initializeNoise(seed);
-    
+    this->getSensor("RPM")->setSensorRange(700.0, 7000.0);
+    this->getSensor("RPM")->setNoiseRange(-5.0,5.0);
+    this->getSensor("RPM")->initializeNoise(seed);
 
     // Set the range and initial readings for the battery and oil pressure sensors
-    battery.setSensorRange(9.5, 12.0);
-    battery.setCurrentReading(12.0); // Set initial battery voltage
-    battery.setLastReading(12.0); // Set initial battery voltage as last reading
-    battery.setNoiseRange(-0.05,0.05);
-    battery.initializeNoise(seed);
+    this->getSensor("Battery")->setSensorRange(9.5, 12.0);
+    this->getSensor("Battery")->setCurrentReading(12.0); // Set initial battery voltage
+    this->getSensor("Battery")->setLastReadings(12.0); // Set initial battery voltage as last reading
+    this->getSensor("Battery")->setNoiseRange(-0.05,0.05);
+    this->getSensor("Battery")->initializeNoise(seed);
 
-    oilPressure.setSensorRange(0.0, 100.0);
-    oilPressure.setCurrentReading(50.0); // Set initial oil pressure
-    oilPressure.setLastReading(50.0); // Set initial oil pressure as last reading
-    oilPressure.setNoiseRange(-5.0,5.0);
-    oilPressure.initializeNoise(seed);
+    
+    this->getSensor("Oil Pressure")->setSensorRange(0.0, 100.0);
+    this->getSensor("Oil Pressure")->setCurrentReading(50.0); // Set initial oil pressure
+    this->getSensor("Oil Pressure")->setLastReadings(50.0); // Set initial oil pressure as last reading
+    this->getSensor("Oil Pressure")->setNoiseRange(-5.0,5.0);
+    this->getSensor("Oil Pressure")->initializeNoise(seed);
 }
 
 void VehicleSimulator::updateReadings() {
     
     // input to the accelerator
-    accelerationChange.simReading(); 
+    this->getSensor("AccelerationInput")->simReading(); // Simulate acceleration input reading
     // simulate acceleration reading based on input
-    acceleration.simReading(accelerationChange.getCurrentReading(), 0.12);
+    this->getSensor("Acceleration")->simReading(this->getSensor("AccelerationInput")->getCurrentReading(), 0.12); // Simulate acceleration reading based on input
     // simulate velocity reading with noise
-    velocity.simReading(acceleration.getCurrentReading(), 0.018);
+    this->getSensor("Velocity")->simReading(this->getSensor("Acceleration")->getCurrentReading(), 0.018); // Simulate velocity reading with noise
     // Simulate temperature reading with noise 
-    temperature.simReading(velocity.getCurrentReading(), 0.03);
+    this->getSensor("Temperature")->simReading(this->getSensor("Velocity")->getCurrentReading(), 0.03); // Simulate temperature reading with noise
     // Simulate RPM reading with noise
-    rpm.simReading(velocity.getCurrentReading(), 1.3); 
+    this->getSensor("RPM")->simReading(this->getSensor("Velocity")->getCurrentReading(), 1.3); 
     // Simulate battery voltage reading with noise
-    battery.simReading(std::abs(velocity.getCurrentReading()), -0.0001); 
+    this->getSensor("Battery")->simReading(std::abs(this->getSensor("Velocity")->getCurrentReading()), -0.0001); 
     // Simulate oil pressure reading with noise
-    oilPressure.simReading(velocity.getCurrentReading(), 0.0001); 
+    this->getSensor("Oil Pressure")->simReading(this->getSensor("Velocity")->getCurrentReading(), 0.0001); 
 
 }
 
 void VehicleSimulator::showReadings() {
     // Display the current readings for each sensor
-    accelerationChange.showReading();
-    acceleration.showReading();
-    velocity.showReading();
-    temperature.showReading();
-    rpm.showReading();
-    battery.showReading();
-    oilPressure.showReading();
+    this->getSensor("AccelerationInput")->showReading();
+    this->getSensor("Acceleration")->showReading();
+    this->getSensor("Velocity")->showReading();
+    this->getSensor("Temperature")->showReading();
+    this->getSensor("RPM")->showReading();
+    this->getSensor("Battery")->showReading();
+    this->getSensor("Oil Pressure")->showReading(); 
 }

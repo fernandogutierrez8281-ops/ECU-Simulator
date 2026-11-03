@@ -1,5 +1,7 @@
 #pragma once
-
+#include <vector>
+#include <string>
+#include <unordered_map>
 #include<random>
 #include<chrono>
 #include<string>
@@ -12,18 +14,18 @@ class VehicleSimulator {
     private:
         int seed;
 
-        SimpleSensor accelerationChange{"AccelerationInput", "%"};
-        OpenLoopSensor acceleration{"Acceleration", "m/s^2"};
-        OpenLoopSensor velocity{"Velocity", "km/h"};
-        OpenLoopSensor temperature{"Temperature", "C"};
-        OpenLoopSensor rpm{"RPM", "rpm"};
-        OpenLoopSensor battery{"Battery", "V"};
-        OpenLoopSensor oilPressure{"Oil Pressure", "psi"};
+        std::vector<Sensor*> sensors;
+        std::unordered_map<std::string, std::size_t> sensorMap;
+
+
+       
         
     public:
         VehicleSimulator(int seed);
 
         ~VehicleSimulator();
+
+        Sensor* getSensor(const std::string& name);
 
         void initializeSensors();
 

@@ -34,17 +34,26 @@ float Sensor::getMax() {
     return max;
 }
 
-float Sensor::setCurrentReading(float reading) {
+void Sensor::setCurrentReading(float reading) {
     if (isValidReading(reading)) {
-        currentReading = reading;
+        readingsBuffer.assign(3, reading);
     } else {
         std::cerr << "Error: Reading " << reading << " is out of range [" << min << ", " << max << "]" << std::endl;
     }
-    return currentReading;
 }
 
 float Sensor::getCurrentReading() {
-    return currentReading;
+    return readingsBuffer.front();
+}
+
+void Sensor::updateReadingsBuffer(float newReading) {
+            readingsBuffer[2] = readingsBuffer[1];
+            readingsBuffer[1] = readingsBuffer[0];
+            readingsBuffer[0] = newReading;
+        }
+
+void Sensor::setLastReadings(float reading) {
+    readingsBuffer.assign(3, reading);
 }
 
 bool Sensor::isValidReading(float reading) {
@@ -120,8 +129,6 @@ void Sensor::showReading() {
 
 }
 
-
-
 ////////////////////////////////////////////////////////
 
 SimpleSensor::SimpleSensor(std::string name, std::string unit = "")
@@ -133,9 +140,9 @@ void SimpleSensor::simReading(bool hasNoise) {
 
     if(hasNoise){
         updateSelfNoise();
-        currentReading = distribution(generator) +  noise;
+        this->updateReadingsBuffer(this->distribution(generator) + noise);
     } else {
-        currentReading = distribution(generator);
+        this->updateReadingsBuffer(this->distribution(generator));
     }
     
 };
@@ -158,24 +165,20 @@ void OpenLoopSensor::simReading(float simpleSensorReading, float kp, bool hasNoi
     changeInReading = simpleSensorReading * kp;
 
     // Update the current reading based on the change in reading
-    currentReading = lastReading + changeInReading;
+    float currentReading = readingsBuffer[1] + changeInReading;
 
     // Ensure the current reading stays within the specified range
 
     if(hasNoise){
         updateSelfNoise();
         currentReading = std::clamp<double>(currentReading, static_cast<float>(min), static_cast<float>(max)) + noise; // Add noise to the reading
+        this->updateReadingsBuffer(currentReading);
     }else{
 
         currentReading = std::clamp<double>(currentReading, static_cast<float>(min), static_cast<float>(max));
+        this->updateReadingsBuffer(currentReading);
     }
 
-    lastReading = currentReading; // Update last reading for the next iteration
-
-}
-
-void OpenLoopSensor::setLastReading(float reading) {
-    lastReading = reading;
 }
 
 

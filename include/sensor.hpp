@@ -12,8 +12,6 @@ class Sensor{
         std::string sensorName;
         std::string sensorState;
 
-        std::vector<float> readingsBuffer;
-
     protected:
         std::string unit;
         double min = 0.0f;
@@ -30,8 +28,7 @@ class Sensor{
         std::mt19937 noiseGenerator;
         std::uniform_real_distribution<double> noiseDistribution;
 
-
-        double currentReading = 0;
+        std::vector<float> readingsBuffer = {0.0f, 0.0f, 0.0f};
         double noise = 0;
 
     public:
@@ -47,7 +44,11 @@ class Sensor{
 
         float getMax();
 
-        float setCurrentReading(float reading);
+        void setCurrentReading(float reading);
+
+        void setLastReadings(float reading);
+
+        void updateReadingsBuffer(float newReading);
 
         float getCurrentReading();
 
@@ -65,6 +66,9 @@ class Sensor{
 
         void showReading();
         
+        virtual void simReading(bool hasNoise = true) {}
+    
+        virtual void simReading(float simpleSensorReading, float kp, bool hasNoise = true) {}
         
 };
 
@@ -76,7 +80,7 @@ class SimpleSensor : public Sensor {
 
         ~SimpleSensor() override;
 
-        void simReading(bool hasNoise = true);
+        void simReading(bool hasNoise = true) override;
 };
 
 //////////////////////////////////////////////////////////
@@ -84,8 +88,6 @@ class SimpleSensor : public Sensor {
 class OpenLoopSensor : public Sensor {
     private:
         float setpoint = 100.0; // Desired velocity
-
-        float lastReading = 0.0;
 
         // Calculate change in velocity based on acceleration reading
         float changeInReading = 0.0;
@@ -97,9 +99,7 @@ class OpenLoopSensor : public Sensor {
 
         void setSetpoint(float newSetpoint);
         
-        void simReading(float simpleSensorReading, float kp, bool hasNoise = true);
-
-        void setLastReading(float reading);
+        void simReading(float simpleSensorReading, float kp, bool hasNoise = true) override;
 
 };
 
