@@ -7,6 +7,7 @@
 #include<string>
 #include <optional>
 #include <iostream>
+#include <memory>
 
 #include "sensor.hpp"
 
@@ -14,11 +15,9 @@ class VehicleSimulator {
     private:
         int seed;
 
-        std::vector<Sensor*> sensors;
+        std::vector<std::unique_ptr<Sensor>> sensors;
         std::unordered_map<std::string, std::size_t> sensorMap;
 
-
-       
         
     public:
         VehicleSimulator(int seed);
