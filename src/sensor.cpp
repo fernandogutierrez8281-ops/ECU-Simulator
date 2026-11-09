@@ -35,18 +35,14 @@ float Sensor::getMax() {
 }
 
 void Sensor::setCurrentReading(float reading) {
-    if (isValidReading(reading)) {
-        readingsBuffer.assign(3, reading);
-    } else {
-        std::cerr << "Error: Reading " << reading << " is out of range [" << min << ", " << max << "]" << std::endl;
-    }
+       readingsBuffer.assign(3, reading);
 }
 
 float Sensor::getCurrentReading() {
-    return readingsBuffer.front();
+    return readingsBuffer.front().value_or(0.0f);
 }
 
-void Sensor::updateReadingsBuffer(float newReading) {
+void Sensor::updateReadingsBuffer(std::optional<float> newReading) {
             readingsBuffer[2] = readingsBuffer[1];
             readingsBuffer[1] = readingsBuffer[0];
             readingsBuffer[0] = newReading;
@@ -54,10 +50,6 @@ void Sensor::updateReadingsBuffer(float newReading) {
 
 void Sensor::setLastReadings(float reading) {
     readingsBuffer.assign(3, reading);
-}
-
-bool Sensor::isValidReading(float reading) {
-    return (reading >= min && reading <= max);
 }
 
 void Sensor::initializeRandomReadings(std::optional<unsigned int> seed) {
@@ -111,6 +103,10 @@ void Sensor::buildSensorAsBarr() {
 
 }
 
+const std::vector<std::optional<float>>& Sensor::getReadingsBuffer() const {
+    return readingsBuffer;
+}
+
 void Sensor::showReading() {
 
     std::cout << std::fixed << std::setprecision(2);
@@ -120,13 +116,17 @@ void Sensor::showReading() {
     std::cout << " " << std::left << std::setw(10) << unit;
     this->buildSensorAsBarr();
 
-    if(!isValidReading(getCurrentReading())){
-        std::cout << "[FAIL]";
-    }
-
     std::cout << "\n";
     
 
+}
+
+void Sensor::setState(const std::string& state) {
+    sensorState = state;
+}
+
+std::string Sensor::getState() const {
+    return sensorState;
 }
 
 ////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ void OpenLoopSensor::simReading(float simpleSensorReading, float kp, bool hasNoi
     changeInReading = simpleSensorReading * kp;
 
     // Update the current reading based on the change in reading
-    float currentReading = readingsBuffer[1] + changeInReading;
+    float currentReading = readingsBuffer[1].value_or(0.0f) + changeInReading;
 
     // Ensure the current reading stays within the specified range
 

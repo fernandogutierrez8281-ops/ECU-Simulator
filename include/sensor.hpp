@@ -10,7 +10,7 @@
 class Sensor{
     private:
         std::string sensorName;
-        std::string sensorState;
+        std::string sensorState = "VALID";
 
     protected:
         std::string unit;
@@ -28,7 +28,7 @@ class Sensor{
         std::mt19937 noiseGenerator;
         std::uniform_real_distribution<double> noiseDistribution;
 
-        std::vector<float> readingsBuffer = {0.0f, 0.0f, 0.0f};
+        std::vector<std::optional <float>> readingsBuffer = {0.0f, 0.0f, 0.0f};
         double noise = 0;
 
     public:
@@ -48,11 +48,9 @@ class Sensor{
 
         void setLastReadings(float reading);
 
-        void updateReadingsBuffer(float newReading);
+        void updateReadingsBuffer(std::optional<float> newReading);
 
         float getCurrentReading();
-
-        bool isValidReading(float reading);
         
         void initializeRandomReadings(std::optional<unsigned int> seed = std::nullopt);
 
@@ -70,6 +68,11 @@ class Sensor{
     
         virtual void simReading(float simpleSensorReading, float kp, bool hasNoise = true) {}
         
+        const std::vector<std::optional<float>>& getReadingsBuffer() const;
+
+        void setState(const std::string& state);
+
+        std::string getState() const;
 };
 
 /////////////////////////////////////////////////////////
