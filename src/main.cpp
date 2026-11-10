@@ -4,6 +4,8 @@
 
 #include "sensor.hpp"
 #include "vehicleSimulator.hpp"
+#include "ecu.hpp"
+#include "dashboard.hpp"
 
 
 int main(){
@@ -15,9 +17,13 @@ int main(){
     VehicleSimulator simulator(seed);
     simulator.initializeSensors();
 
+    ECU ecu(simulator);
+
+    Dashboard dashboard(ecu);
+
     for (float t = 0; t < simtime; t += dt) {
-        simulator.updateReadings();
-        simulator.showReadings();
+        ecu.update();
+        dashboard.showDashboard();
         std::cout << " " << std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(dt * 1000)));
