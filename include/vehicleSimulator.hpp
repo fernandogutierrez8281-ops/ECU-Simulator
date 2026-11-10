@@ -30,10 +30,6 @@ class VehicleSimulator {
 
         void updateReadings();
 
-        void showReadings();
-
-
-
 };
 
         
