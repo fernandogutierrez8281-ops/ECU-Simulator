@@ -60,10 +60,6 @@ class Sensor{
 
         void updateSelfNoise();
 
-        void buildSensorAsBarr();
-
-        void showReading();
-        
         virtual void simReading(bool hasNoise = true) {}
     
         virtual void simReading(float simpleSensorReading, float kp, bool hasNoise = true) {}
@@ -73,6 +69,8 @@ class Sensor{
         void setState(const std::string& state);
 
         std::string getState() const;
+
+        std::string getUnit() const;
 };
 
 /////////////////////////////////////////////////////////

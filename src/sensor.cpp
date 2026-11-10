@@ -86,39 +86,8 @@ void Sensor::updateSelfNoise() {
     noise = noiseDistribution(noiseGenerator); 
 }
 
-void Sensor::buildSensorAsBarr() {
-    float normalizeReading = (this->getCurrentReading() - this->getMin())/(this->getMax() - this->getMin());
-    int barrResolution = 10;
-
-    std::cout << "[";
-    for(int i = 0; i<= barrResolution; i++){
-        if(i <= normalizeReading*barrResolution){
-            std::cout << "#";
-        } else {
-            std::cout << "-";
-        }
-    }
-
-     std::cout << "] ";
-
-}
-
 const std::vector<std::optional<float>>& Sensor::getReadingsBuffer() const {
     return readingsBuffer;
-}
-
-void Sensor::showReading() {
-
-    std::cout << std::fixed << std::setprecision(2);
-
-    std::cout << std::left << std::setw(20) << getName();
-    std::cout << std::right << std::setw(10) << getCurrentReading();
-    std::cout << " " << std::left << std::setw(10) << unit;
-    this->buildSensorAsBarr();
-
-    std::cout << "\n";
-    
-
 }
 
 void Sensor::setState(const std::string& state) {
@@ -127,6 +96,10 @@ void Sensor::setState(const std::string& state) {
 
 std::string Sensor::getState() const {
     return sensorState;
+}
+
+std::string Sensor::getUnit() const {
+    return unit;
 }
 
 ////////////////////////////////////////////////////////
