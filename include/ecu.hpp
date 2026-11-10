@@ -36,7 +36,6 @@ class ECU {
         int invalidReadingsCount = 0;
 
     public:
-        // CORRECTO: Solo la firma, terminando en punto y coma.
         ECU(VehicleSimulator& simulator);
 
         ~ECU();
@@ -55,5 +54,9 @@ class ECU {
 
         bool checkSensorBuffer(Sensor* sensor) const;
 
+        VehicleSimulator& getSimulator();
+
         EcuStates getState();
+
+        int getInvalidReadingsCount();
 };

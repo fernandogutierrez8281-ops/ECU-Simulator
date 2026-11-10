@@ -91,22 +91,23 @@ void ECU::gateway() {
     invalidReadingsCount = std::count_if(activeSensors.begin(), activeSensors.end(), 
         [this](Sensor* s) {
             
-            if (this->IsOutOFRanges(s) || this->isStuck(s)){
-                s->setState("INVALID");
-            }
+            bool outOfRangeOrStuck = this->IsOutOFRanges(s) || this->isStuck(s);
+            bool isMissing = this->checkSensorBuffer(s);
 
-            if (this->checkSensorBuffer(s)){
+            if (isMissing) {
                 s->setState("MISSING");
-            }
-
-            if (s->getState() != "INVALID" && s->getState() != "MISSING") {
+            } 
+            else if (outOfRangeOrStuck) {
+                s->setState("INVALID");
+            } 
+            else {
                 s->setState("VALID");
             }
             
-            return this->IsOutOFRanges(s) || this->isStuck(s) || this->checkSensorBuffer(s); 
+            return outOfRangeOrStuck || isMissing; 
         }
     );
-};
+}
 
 void ECU::control() {
     if (invalidReadingsCount == 0) {
@@ -119,3 +120,15 @@ void ECU::control() {
         ecuState = EcuStates::SHUTDOWN;
     }
 };
+
+VehicleSimulator& ECU::getSimulator() {
+    return simulator;
+}
+
+EcuStates ECU::getState() {
+    return ecuState;
+}
+
+int ECU::getInvalidReadingsCount() {
+    return invalidReadingsCount;
+}
