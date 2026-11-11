@@ -57,18 +57,18 @@ void Dashboard::ShowECUState() {
     std::cout << "ECU State: " << stateName << "\n";
 }
 
-void Dashboard::showDashboard() {
+void Dashboard::showDashboard(int CurrentCycle) {
 
-    std::cout << "=============================================\n";
-    std::cout << "             ECU VEHICLE DASHBOARD           \n";
-    std::cout << "=============================================\n\n";
+    std::cout << "==========================================================================\n";
+    std::cout << "                          ECU VEHICLE DASHBOARD                           \n";
+    std::cout << "==========================================================================\n\n";
 
-    std::cout << "====================\n";
+    std::cout << "==========================================================================\n";
     this->showAllSensorReadings();
-    std::cout << "--------------------\n";
+    std::cout << "--------------------------------------------------------------------------\n";
     this->ShowECUState();
-    std::cout << "====================\n";
-
+    std::cout << "==========================================================================\n";
+    std::cout << "Current Cycle: " << CurrentCycle << "\n";
     std::cout << "Failed Sensors: " << std::to_string(ecu.getInvalidReadingsCount()) << "\n";
-    std::cout << "=============================================\n";
+    std::cout << "==========================================================================\n";
 }

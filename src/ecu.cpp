@@ -80,8 +80,6 @@ void ECU::performSelfTest() {
 
 void ECU::update() {
 
-    simulator.updateReadings();
-
     this->gateway();
     this->control();
 }
@@ -132,3 +130,20 @@ EcuStates ECU::getState() {
 int ECU::getInvalidReadingsCount() {
     return invalidReadingsCount;
 }
+
+std::vector<Sensor*> ECU::getActiveSensors() const {
+    return activeSensors;
+}
+
+std::string ECU::getStateName() const {
+    switch (ecuState) {
+        case EcuStates::INIT: return "INIT";
+        case EcuStates::SELF_TEST: return "SELF_TEST";
+        case EcuStates::OPERATIONAL: return "OPERATIONAL";
+        case EcuStates::DEGRADED: return "DEGRADED";
+        case EcuStates::SAFE_STATE: return "SAFE_STATE";
+        case EcuStates::SHUTDOWN: return "SHUTDOWN";
+        default: return "UNKNOWN";
+    }
+}
+

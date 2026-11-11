@@ -43,6 +43,6 @@ class Dashboard {
 
         void ShowECUState();
 
-        void showDashboard();
+        void showDashboard(int CurrentCycle);
 };
 

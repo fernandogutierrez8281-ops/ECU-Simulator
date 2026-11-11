@@ -59,4 +59,8 @@ class ECU {
         EcuStates getState();
 
         int getInvalidReadingsCount();
+
+        std::vector<Sensor*> getActiveSensors() const;
+
+        std::string getStateName() const;
 };

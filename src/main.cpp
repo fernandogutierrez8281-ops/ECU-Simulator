@@ -6,6 +6,7 @@
 #include "vehicleSimulator.hpp"
 #include "ecu.hpp"
 #include "dashboard.hpp"
+#include "logger.hpp"
 
 
 int main(){
@@ -19,11 +20,20 @@ int main(){
 
     ECU ecu(simulator);
 
+    Logger logger("ecu_log.csv");
+
     Dashboard dashboard(ecu);
 
     for (float t = 0; t < simtime; t += dt) {
+
+        simulator.updateReadings();
+
         ecu.update();
-        dashboard.showDashboard();
+
+        dashboard.showDashboard(static_cast<int>(t));
+
+        logger.updateFile(ecu, static_cast<int>(t));
+
         std::cout << " " << std::endl;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(dt * 1000)));
