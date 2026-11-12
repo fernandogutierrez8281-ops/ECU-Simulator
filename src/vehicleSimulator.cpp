@@ -97,7 +97,7 @@ void VehicleSimulator::updateReadings() {
     // El arrastre (drag) aumenta con la velocidad actual
     float drag = velocity->getCurrentReading() * 0.015f; 
     float currentAccel = (throttle * 0.8f) - drag; 
-    accel->updateReadingsBuffer(currentAccel); // Valor directo, no se integra
+    accel->setCurrentReading(currentAccel); // Valor directo, no se integra
 
     // 3. VELOCIDAD (Física: Integral de la Aceleración)
     // Aquí SÍ usamos tu simReading integrador. 
@@ -108,7 +108,7 @@ void VehicleSimulator::updateReadings() {
     // 4. RPM (Física: Proporcional a la velocidad + Ralentí)
     // Simulando una marcha fija. Ralentí = 800 RPM. A 100 km/h = 4800 RPM.
     float currentRPM = 800.0f + (std::max(0.0f, currentVel) * 40.0f);
-    rpm->updateReadingsBuffer(currentRPM); 
+    rpm->setCurrentReading(currentRPM); 
 
     // 5. TEMPERATURA (Física: Equilibrio térmico)
     // Generación de calor por RPM - Enfriamiento por aire (Velocidad)
@@ -118,16 +118,16 @@ void VehicleSimulator::updateReadings() {
     
     // Tendencia natural a volver a 90°C (termostato del auto)
     float deltaTemp = calorGenerado - enfriamiento + ((90.0f - currentTemp) * 0.01f);
-    temp->updateReadingsBuffer(currentTemp + deltaTemp);
+    temp->setCurrentReading(currentTemp + deltaTemp);
 
     // 6. PRESIÓN DE ACEITE (Física: Depende exclusivamente de las RPM)
     // 20 psi base + ganancia por RPM. A 6000 RPM -> ~68 psi.
     float currentOil = 20.0f + (currentRPM * 0.008f);
-    oil->updateReadingsBuffer(currentOil);
+    oil->setCurrentReading(currentOil);
 
     // 7. VOLTAJE DE BATERÍA (Física: Carga del alternador)
     // Si el motor gira (RPM > 500), el alternador provee ~14V. Fluctúa muy levemente con las RPM.
     float currentBatt = (currentRPM > 500.0f) ? 14.0f : 12.0f;
     currentBatt += (currentRPM / 7000.0f) * 0.4f; // Sube hasta 14.4V a tope de RPM
-    battery->updateReadingsBuffer(currentBatt);
+    battery->setCurrentReading(currentBatt);
 }
