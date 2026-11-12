@@ -48,15 +48,9 @@ bool ECU::checkSensorBuffer(Sensor* sensor) const {
 
     const auto& buffer = sensor->getReadingsBuffer();
 
-    bool hasFail = std::any_of(buffer.begin(), buffer.end(), [](const std::optional<float>& val) {
+    return std::any_of(buffer.begin(), buffer.end(), [](const std::optional<float>& val) {
         return !val.has_value(); 
     });
-
-    int zeroCount = std::count_if(buffer.begin(), buffer.end(), [](const std::optional<float>& val) {
-        return val.has_value() && val.value() == 0.0f;
-    });
-
-    return hasFail || (zeroCount > 2);
 }
 
 void ECU::performSelfTest() {
@@ -80,8 +74,12 @@ void ECU::performSelfTest() {
 
 void ECU::update() {
 
+    this->fetchAndDecodeReadings();
+
     this->gateway();
     this->control();
+
+    currentCycle++;
 }
 
 void ECU::gateway() {
@@ -89,14 +87,19 @@ void ECU::gateway() {
     invalidReadingsCount = std::count_if(activeSensors.begin(), activeSensors.end(), 
         [this](Sensor* s) {
             
+            bool isMissingByTime = this->checkSensorCycles(s);
+            
+            bool isMissingByBuffer = this->checkSensorBuffer(s);
+            
+            bool isMissing = isMissingByTime || isMissingByBuffer;
+
             bool outOfRangeOrStuck = this->IsOutOFRanges(s) || this->isStuck(s);
-            bool isMissing = this->checkSensorBuffer(s);
 
             if (isMissing) {
                 s->setState("MISSING");
             } 
             else if (outOfRangeOrStuck) {
-                s->setState("INVALID");
+                s->setState("INVALID"); // Una señal presente pero fuera de rango será INVALID[cite: 7]
             } 
             else {
                 s->setState("VALID");
@@ -147,3 +150,35 @@ std::string ECU::getStateName() const {
     }
 }
 
+bool ECU::checkSensorCycles(Sensor* sensor) const {
+    if (!sensor) return true;
+
+    constexpr uint32_t N_max = 3; 
+    
+    uint32_t ultimaRecepcion = sensor->getLastUpdateCycle(); 
+
+    uint32_t deltaC = currentCycle - ultimaRecepcion;
+
+    return deltaC > N_max; 
+}
+
+void ECU::fetchAndDecodeReadings() {
+    for (Sensor* s : activeSensors) {
+        if (!s) continue;
+
+        std::optional<uint16_t> rawOpt = s->getTransmittedRawReading();
+        
+        std::optional<float> decodedValue = std::nullopt;
+
+        if (rawOpt.has_value()) {
+            uint16_t rawValue = rawOpt.value();
+            float F = s->getFactor();
+            float O = s->getOffset();
+            
+            // y = xF + O
+            decodedValue = (rawValue * F) + O;
+        }
+
+        s->updateReadingsBuffer(decodedValue, this->currentCycle);
+    }
+}

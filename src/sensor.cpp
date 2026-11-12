@@ -48,7 +48,6 @@ void Sensor::updateReadingsBuffer(std::optional<float> newReading, uint32_t curr
     readingsBuffer[0] = newReading;
     
     if (newReading.has_value()) {
-        // Solo actualizamos la marca temporal si llegó una muestra real
         this->lastUpdateCicle = currentCycle;
     }
 }

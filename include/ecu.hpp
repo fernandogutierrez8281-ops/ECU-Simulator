@@ -19,6 +19,8 @@ enum class EcuStates {
 class ECU {
 
     private: 
+
+        int currentCycle = 0;
         EcuStates ecuState = EcuStates::INIT;
 
         VehicleSimulator& simulator;
@@ -53,6 +55,10 @@ class ECU {
         bool IsOutOFRanges(Sensor* sensor) const;
 
         bool checkSensorBuffer(Sensor* sensor) const;
+
+        bool checkSensorCycles(Sensor* sensor) const;
+
+        void fetchAndDecodeReadings();
 
         VehicleSimulator& getSimulator();
 
