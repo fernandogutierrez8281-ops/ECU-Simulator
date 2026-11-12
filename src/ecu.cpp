@@ -79,6 +79,12 @@ void ECU::update() {
     this->gateway();
     this->control();
 
+    uint16_t rawTemperature = getRawValue("Temperature");
+    uint16_t rawRPM = getRawValue("RPM");
+    uint8_t currentECUState = static_cast<uint8_t>(this->ecuState);
+
+    logger.doRegister(currentCycle, rawTemperature, rawRPM, currentECUState);
+
     currentCycle++;
 }
 
@@ -181,4 +187,14 @@ void ECU::fetchAndDecodeReadings() {
 
         s->updateReadingsBuffer(decodedValue, this->currentCycle);
     }
-}
+};
+
+uint16_t ECU::getRawValue(const std::string& sensorName){
+    for (Sensor* s : activeSensors) {
+        if (s && s->getName() == sensorName) {
+            std::optional<uint16_t> valor = s->getTransmittedRawReading();
+            return valor.value_or(0); 
+        }
+    }
+    return 0;
+};

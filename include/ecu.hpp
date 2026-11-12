@@ -6,6 +6,7 @@
 
 #include "vehicleSimulator.hpp"
 #include "sensor.hpp"
+#include "binaryLogger.hpp"
 
 enum class EcuStates {
     INIT,
@@ -36,6 +37,8 @@ class ECU {
         };
 
         int invalidReadingsCount = 0;
+
+        BinaryLogger logger{"binary_data_ecu.bin"};
 
     public:
         ECU(VehicleSimulator& simulator);
@@ -69,4 +72,6 @@ class ECU {
         std::vector<Sensor*> getActiveSensors() const;
 
         std::string getStateName() const;
+
+        uint16_t getRawValue(const std::string& sensorName);
 };
