@@ -42,11 +42,16 @@ float Sensor::getCurrentReading() {
     return readingsBuffer.front().value_or(0.0f);
 }
 
-void Sensor::updateReadingsBuffer(std::optional<float> newReading) {
-            readingsBuffer[2] = readingsBuffer[1];
-            readingsBuffer[1] = readingsBuffer[0];
-            readingsBuffer[0] = newReading;
-        }
+void Sensor::updateReadingsBuffer(std::optional<float> newReading, uint32_t currentCycle) {
+    readingsBuffer[2] = readingsBuffer[1];
+    readingsBuffer[1] = readingsBuffer[0];
+    readingsBuffer[0] = newReading;
+    
+    if (newReading.has_value()) {
+        // Solo actualizamos la marca temporal si llegó una muestra real
+        this->lastUpdateCicle = currentCycle;
+    }
+}
 
 void Sensor::setLastReadings(float reading) {
     readingsBuffer.assign(3, reading);
@@ -102,6 +107,39 @@ std::string Sensor::getUnit() const {
     return unit;
 }
 
+uint32_t Sensor::getLastUpdateCycle() {
+    return lastUpdateCicle;
+}
+
+void Sensor::recoverCycle(uint32_t cycle) {
+    lastUpdateCicle = cycle;
+}
+
+void Sensor::setScaling(float factor, float offset) {
+    this->factor = factor;
+    this->offset = offset;
+}
+
+float Sensor::getFactor() const {
+    return factor;
+}
+
+float Sensor::getOffset() const {
+    return offset;
+}
+
+std::optional<uint16_t> Sensor::getTransmittedRawReading() {
+    float physicalValue = getCurrentReading(); 
+    
+    if (factor == 0.0f) return std::nullopt; 
+
+    float rawFloat = std::round((physicalValue - offset) / factor);
+    
+    rawFloat = std::clamp(rawFloat, 0.0f, 65535.0f);
+    
+    return static_cast<uint16_t>(rawFloat);
+}
+
 ////////////////////////////////////////////////////////
 
 SimpleSensor::SimpleSensor(std::string name, std::string unit = "")
@@ -113,9 +151,10 @@ void SimpleSensor::simReading(bool hasNoise) {
 
     if(hasNoise){
         updateSelfNoise();
-        this->updateReadingsBuffer(this->distribution(generator) + noise);
+        this->setCurrentReading(this->distribution(generator) + noise);
     } else {
-        this->updateReadingsBuffer(this->distribution(generator));
+        this->setCurrentReading(this->distribution(generator));
+        
     }
     
 };
@@ -145,11 +184,11 @@ void OpenLoopSensor::simReading(float simpleSensorReading, float kp, bool hasNoi
     if(hasNoise){
         updateSelfNoise();
         currentReading = std::clamp<double>(currentReading, static_cast<float>(min), static_cast<float>(max)) + noise; // Add noise to the reading
-        this->updateReadingsBuffer(currentReading);
+        this->setCurrentReading(currentReading);
     }else{
 
         currentReading = std::clamp<double>(currentReading, static_cast<float>(min), static_cast<float>(max));
-        this->updateReadingsBuffer(currentReading);
+        this->setCurrentReading(currentReading);
     }
 
 }

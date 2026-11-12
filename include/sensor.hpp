@@ -31,6 +31,11 @@ class Sensor{
         std::vector<std::optional <float>> readingsBuffer = {0.0f, 0.0f, 0.0f};
         double noise = 0;
 
+        uint32_t lastUpdateCicle = 0;
+
+        float factor = 1.0f;
+        float offset = 0.0f;
+
     public:
         Sensor(std::string name, std::string unit);
 
@@ -48,7 +53,7 @@ class Sensor{
 
         void setLastReadings(float reading);
 
-        void updateReadingsBuffer(std::optional<float> newReading);
+        void updateReadingsBuffer(std::optional<float> newReading, uint32_t currentCycle);
 
         float getCurrentReading();
         
@@ -71,6 +76,18 @@ class Sensor{
         std::string getState() const;
 
         std::string getUnit() const;
+
+        uint32_t getLastUpdateCycle();
+
+        void recoverCycle(uint32_t cycle);
+
+        void setScaling(float factor, float offset);
+
+        float getFactor() const;
+        
+        float getOffset() const;
+
+        std::optional<uint16_t> getTransmittedRawReading();
 };
 
 /////////////////////////////////////////////////////////
