@@ -1,0 +1,6 @@
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/ecu_core.dir
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/programa.dir
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/testGateway.dir
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/test.dir
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/edit_cache.dir
+/home/fernando_gtz/codigos_cpp/nivel4/misPruebas/my_ecu/build/CMakeFiles/rebuild_cache.dir

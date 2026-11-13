@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/testGateway.dir/link.d CMakeFiles/testGateway.dir/tests/testGateway.cpp.o -o testGateway  libecu_core.a

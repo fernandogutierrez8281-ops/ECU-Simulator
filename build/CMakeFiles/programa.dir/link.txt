@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/programa.dir/link.d CMakeFiles/programa.dir/src/main.cpp.o -o programa  libecu_core.a

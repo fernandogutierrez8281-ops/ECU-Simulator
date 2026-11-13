@@ -1,0 +1,2 @@
+/usr/bin/ar qc libecu_core.a CMakeFiles/ecu_core.dir/src/binaryLogger.cpp.o CMakeFiles/ecu_core.dir/src/dashboard.cpp.o CMakeFiles/ecu_core.dir/src/ecu.cpp.o CMakeFiles/ecu_core.dir/src/logger.cpp.o CMakeFiles/ecu_core.dir/src/sensor.cpp.o CMakeFiles/ecu_core.dir/src/vehicleSimulator.cpp.o
+/usr/bin/ranlib libecu_core.a
