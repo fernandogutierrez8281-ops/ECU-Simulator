@@ -60,17 +60,20 @@ void VehicleSimulator::initializeSensors() {
     rpm->setNoiseRange(-15.0, 15.0); 
     rpm->initializeNoise(seed);
     rpm->setLastReadings(800.0f); // Régimen de ralentí (idle)
+    rpm->setScaling(0.5f, 0.0f);
 
     temp->setSensorRange(-20.0, 110.0);
     temp->setNoiseRange(-0.5, 0.5); 
     temp->initializeNoise(seed);
     temp->setLastReadings(90.0f); // Temperatura óptima de operación
+    temp->setScaling(0.1f, -40.0f);
 
     // 4. PRESIÓN DE ACEITE (Física: 20 psi base + (800 RPM * 0.008) = 26.4 psi)
     oil->setSensorRange(0.0, 100.0);
     oil->setNoiseRange(-1.0, 1.0);
     oil->initializeNoise(seed);
     oil->setLastReadings(26.4f); 
+    oil->setScaling(0.1f, 0.0f);
 
     // 5. BATERÍA (Física: Motor a 800 RPM = Alternador entregando ~14.0V)
     battery->setSensorRange(9.5, 15.0); // Ajustado a 15.0V para permitir los 14.4V de tu updateReadings
