@@ -35,7 +35,9 @@ float Sensor::getMax() {
 }
 
 void Sensor::setCurrentReading(float reading) {
-       readingsBuffer.assign(3, reading);
+       if (!readingsBuffer.empty()) {
+        readingsBuffer[0] = reading; 
+    }
 }
 
 float Sensor::getCurrentReading() {
@@ -128,15 +130,24 @@ float Sensor::getOffset() const {
 }
 
 std::optional<uint16_t> Sensor::getTransmittedRawReading() {
+    if (!readingsBuffer.front().has_value()) {
+        return std::nullopt;
+    }
+
     float physicalValue = getCurrentReading(); 
     
     if (factor == 0.0f) return std::nullopt; 
 
     float rawFloat = std::round((physicalValue - offset) / factor);
-    
     rawFloat = std::clamp(rawFloat, 0.0f, 65535.0f);
     
     return static_cast<uint16_t>(rawFloat);
+}
+
+void Sensor::clearCurrentReading() {
+    if (!readingsBuffer.empty()) {
+        readingsBuffer[0] = std::nullopt; // Forzamos la ausencia del dato
+    }
 }
 
 ////////////////////////////////////////////////////////

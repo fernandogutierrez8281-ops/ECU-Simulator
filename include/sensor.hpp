@@ -88,6 +88,8 @@ class Sensor{
         float getOffset() const;
 
         std::optional<uint16_t> getTransmittedRawReading();
+
+        void clearCurrentReading();
 };
 
 /////////////////////////////////////////////////////////
