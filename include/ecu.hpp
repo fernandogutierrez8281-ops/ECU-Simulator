@@ -51,13 +51,9 @@ class ECU {
 
         void update();
 
-        void performSelfTest();
-
         bool isStuck(Sensor* sensor) const;
 
         bool IsOutOFRanges(Sensor* sensor) const;
-
-        bool checkSensorBuffer(Sensor* sensor) const;
 
         bool checkSensorCycles(Sensor* sensor) const;
 
@@ -74,4 +70,8 @@ class ECU {
         std::string getStateName() const;
 
         uint16_t getRawValue(const std::string& sensorName);
+
+        bool hasCriticalFailure() const;
+
+        bool hasMinorFailure() const;
 };

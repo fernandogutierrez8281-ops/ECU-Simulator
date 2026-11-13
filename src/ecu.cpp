@@ -11,7 +11,6 @@
 
 ECU::ECU(VehicleSimulator& simulator)
     : simulator(simulator) {
-        performSelfTest();
     }
 
 ECU::~ECU() = default;
@@ -23,10 +22,13 @@ bool ECU::IsOutOFRanges(Sensor* sensor) const {
     float minLimit = sensor->getMin();
     float maxLimit = sensor->getMax();
 
-    return std::any_of(buffer.begin(), buffer.end(), [minLimit, maxLimit](const std::optional<float>& val) {
-        if (!val.has_value()) return true; 
-        return val.value() < minLimit || val.value() > maxLimit; 
-    });
+    for (const auto& val : buffer) {
+        if (val.has_value()) {
+            return val.value() < minLimit || val.value() > maxLimit;
+        }
+    }
+    
+    return false; 
 }
 
 bool ECU::isStuck(Sensor* sensor) const {
@@ -41,35 +43,6 @@ bool ECU::isStuck(Sensor* sensor) const {
     return std::all_of(buffer.begin(), buffer.end(), [primerValor](const std::optional<float>& val) {
         return val == primerValor; 
     });
-}
-
-bool ECU::checkSensorBuffer(Sensor* sensor) const {
-    if (!sensor) return true; 
-
-    const auto& buffer = sensor->getReadingsBuffer();
-
-    return std::any_of(buffer.begin(), buffer.end(), [](const std::optional<float>& val) {
-        return !val.has_value(); 
-    });
-}
-
-void ECU::performSelfTest() {
-
-    int invalidCount = std::count_if(activeSensors.begin(), activeSensors.end(), 
-        [this](Sensor* s) {
-            return this->IsOutOFRanges(s) || this->isStuck(s) || this->checkSensorBuffer(s); 
-        }
-    );
-
-    if (invalidCount == 0) {
-        ecuState = EcuStates::OPERATIONAL;
-    } else if (invalidCount <= 2) {
-        ecuState = EcuStates::DEGRADED;
-    } else if (invalidCount <= 4) {
-        ecuState = EcuStates::SAFE_STATE;
-    } else {
-        ecuState = EcuStates::SHUTDOWN;
-    }
 }
 
 void ECU::update() {
@@ -89,44 +62,74 @@ void ECU::update() {
 }
 
 void ECU::gateway() {
-
     invalidReadingsCount = std::count_if(activeSensors.begin(), activeSensors.end(), 
         [this](Sensor* s) {
             
-            bool isMissingByTime = this->checkSensorCycles(s);
+            bool isMissing = this->checkSensorCycles(s);
             
-            bool isMissingByBuffer = this->checkSensorBuffer(s);
-            
-            bool isMissing = isMissingByTime || isMissingByBuffer;
-
-            bool outOfRangeOrStuck = this->IsOutOFRanges(s) || this->isStuck(s);
+            bool outOfRange = this->IsOutOFRanges(s);
 
             if (isMissing) {
                 s->setState("MISSING");
             } 
-            else if (outOfRangeOrStuck) {
-                s->setState("INVALID"); // Una señal presente pero fuera de rango será INVALID[cite: 7]
-            } 
-            else {
+            else if (outOfRange) {
+                s->setState("INVALID"); 
+            } else {
                 s->setState("VALID");
             }
             
-            return outOfRangeOrStuck || isMissing; 
+            return outOfRange || isMissing; 
         }
     );
 }
 
 void ECU::control() {
-    if (invalidReadingsCount == 0) {
-        ecuState = EcuStates::OPERATIONAL;
-    } else if (invalidReadingsCount <= 2) {
-        ecuState = EcuStates::DEGRADED;
-    } else if (invalidReadingsCount <= 4) {
-        ecuState = EcuStates::SAFE_STATE;
-    } else {
-        ecuState = EcuStates::SHUTDOWN;
+    bool criticalFail = hasCriticalFailure();
+    bool minorFailure = hasMinorFailure();
+    bool noFail = !criticalFail && !minorFailure;
+
+    switch (ecuState) {
+        case EcuStates::INIT:
+            ecuState = EcuStates::SELF_TEST;
+            break;
+
+        case EcuStates::SELF_TEST:
+            if (noFail) {
+                ecuState = EcuStates::OPERATIONAL;
+            } else if (criticalFail) {
+                ecuState = EcuStates::SAFE_STATE; 
+            } else if (minorFailure || invalidReadingsCount > 2) {
+                ecuState = EcuStates::DEGRADED; 
+            }
+            break;
+
+        case EcuStates::OPERATIONAL:
+            if (criticalFail) {
+                ecuState = EcuStates::SAFE_STATE; 
+            } else if (minorFailure || invalidReadingsCount > 2) {
+                ecuState = EcuStates::DEGRADED;
+            }
+            break;
+
+        case EcuStates::DEGRADED:
+            if (criticalFail) {
+                ecuState = EcuStates::SAFE_STATE; 
+            } else if (noFail) {
+                ecuState = EcuStates::OPERATIONAL; 
+            }
+            break;
+
+        case EcuStates::SAFE_STATE:
+            ecuState = EcuStates::SHUTDOWN;
+            break;
+
+        case EcuStates::SHUTDOWN:
+            break;
+            
+        default:
+            break;
     }
-};
+}
 
 VehicleSimulator& ECU::getSimulator() {
     return simulator;
@@ -198,3 +201,25 @@ uint16_t ECU::getRawValue(const std::string& sensorName){
     }
     return 0;
 };
+
+bool ECU::hasCriticalFailure() const {
+    for (Sensor* s : activeSensors) {
+        if (!s) continue;
+        std::string name = s->getName();
+        if ((name == "Temperature" || name == "Oil Pressure") && s->getState() != "VALID") {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ECU::hasMinorFailure() const {
+    for (Sensor* s : activeSensors) {
+        if (!s) continue;
+        std::string name = s->getName();
+        if ((name == "Velocity" || name == "RPM" || name == "Battery") && s->getState() != "VALID") {
+            return true;
+        }
+    }
+    return false;
+}
